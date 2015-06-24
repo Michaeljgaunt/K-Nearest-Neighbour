@@ -1,6 +1,10 @@
 import numpy
 from scipy.spatial import distance
 import random
+import argparse
+import sys
+
+
 
 def get_features(fname):
 	features = set()
@@ -70,7 +74,26 @@ def check_prediction(test_review, predicted_label):
 		return False
 
 if __name__ == "__main__":
-	print "\nGenerating feature space..."
+
+	#Adding an argparse to parse command line commands.
+	parser = argparse.ArgumentParser(description="K-Nearest neighbour binary sentiment classification for Amazon.co.uk reviews.", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	#Adding commands.
+	parser.add_argument("-k", "--kvalue", help="Choose number of neighbours to use for classification. An odd value must be chosen.", type=int, default=5)
+
+
+	#Parsing the command line arguments.
+	args = parser.parse_args()
+
+	if(args.kvalue % 2 == 0):
+		print "K-value must be an odd integer."
+		sys.exit()
+
+	if not (len(sys.argv) > 1):
+		print "No command line arguments input, K-value defaulted to 5."
+	else:
+		print "\nK-value of", args.kvalue, "has been selected."
+
+	print "Generating feature space..."
 	feat_space = generate_feature_space("train.positive", "train.negative", "test.positive", "test.negative")
 	print "Generating training data..."
 	training_review_vectors = generate_feat_vectors("train.positive", 1, feat_space)
@@ -85,7 +108,7 @@ if __name__ == "__main__":
 	print "Predicting test data labels..."
 	for (review_number,(test_review_vector, actual_label)) in enumerate(test_review_vectors):
 		total_predictions += 1
-		predicted_label = predict_label(training_review_vectors, test_review_vector, actual_label)
+		predicted_label = predict_label(training_review_vectors, test_review_vector, args.kvalue)
 		if(predicted_label == 1):
 			print "Test review", review_number, ": positive sentiment predicted"
 		else:
