@@ -107,9 +107,9 @@ if __name__ == "__main__":
 		total_predictions += 1
 		predicted_label = predict_label(training_review_vectors, test_review_vector, args.kvalue)
 		if(predicted_label == 1):
-			print "Test review", review_number, ": positive sentiment predicted"
+			print "Test review", review_number + 1, ": positive sentiment predicted"
 		else:
-			print "Test review", review_number, ": negative sentiment predicted"
+			print "Test review", review_number + 1, ": negative sentiment predicted"
 		if actual_label == predicted_label:
 			correct_predictions += 1
 	print "\nPrediction accuracy =", (float(correct_predictions) / float(total_predictions)) * float(100)
