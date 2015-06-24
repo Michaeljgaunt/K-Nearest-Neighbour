@@ -1,4 +1,6 @@
 import numpy
+from scipy.spatial import distance
+import random
 
 def get_features(fname):
 	features = set()
@@ -41,9 +43,56 @@ def generate_feat_vectors(filename, label, feat_space):
             review_vectors.append((temp_vector, label))
     return review_vectors
 
+def calculate_similarity(vector_x, vector_y):
+	return distance.euclidean(vector_x, vector_y)
+
+def predict_label(training_data, test_review, k):
+	similarity_scores = []
+	for (training_review, label) in training_data:
+	    similarity_scores.append((label, calculate_similarity(training_review, test_review)))
+	similarity_scores.sort(lambda x, y: 1 if x[1] > y[1] else -1)
+	pos_count = neg_count = 0
+	for top in similarity_scores[:k]:
+	    if top[0] == 1:
+	        pos_count += 1
+	    else:
+	        neg_count += 1
+	if pos_count > neg_count:
+	    return 1
+	else:
+	    return -1
+	pass
+
+def check_prediction(test_review, predicted_label):
+	if(test_review[-1] == predicted_label):
+		return True
+	else:
+		return False
 
 if __name__ == "__main__":
+	print "\nGenerating feature space..."
 	feat_space = generate_feature_space("train.positive", "train.negative", "test.positive", "test.negative")
-	positive_vectors = generate_feat_vectors("train.positive", 1, feat_space)
-	print len(positive_vectors)
+	print "Generating training data..."
+	training_review_vectors = generate_feat_vectors("train.positive", 1, feat_space)
+	training_review_vectors.extend(generate_feat_vectors("train.negative", -1, feat_space))
+	print "Generating test data..."
+	test_review_vectors = generate_feat_vectors("test.positive", 1 ,feat_space)
+	test_review_vectors.extend(generate_feat_vectors("test.negative", -1, feat_space))
+	print "Shuffling test data..."
+	random.shuffle(test_review_vectors)
+	correct_predictions = 0
+	total_predictions= 0
+	print "Predicting test data labels..."
+	for (review_number,(test_review_vector, actual_label)) in enumerate(test_review_vectors):
+		total_predictions += 1
+		predicted_label = predict_label(training_review_vectors, test_review_vector, actual_label)
+		if(predicted_label == 1):
+			print "Test review", review_number, ": positive sentiment predicted"
+		else:
+			print "Test review", review_number, ": negative sentiment predicted"
+		if actual_label == predicted_label:
+			correct_predictions += 1
+	print "\nPrediction accuracy =", (float(correct_predictions) / float(total_predictions)) * float(100)
 
+
+	
