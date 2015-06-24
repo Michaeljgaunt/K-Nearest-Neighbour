@@ -4,8 +4,7 @@ import random
 import argparse
 import sys
 
-
-
+#Function to get unigram and bigram features from a file and put them in a set.
 def get_features(fname):
 	features = set()
 	with open(fname) as feat_file:
@@ -14,14 +13,13 @@ def get_features(fname):
 				features.add(feat)
 	return features
 
+#Function to generate a feature space from sets of features.
 def generate_feature_space(positive_training_file, negative_training_file, positive_test_file, negative_test_file):
 	#Defining feature_space and unioning with all other training/test files.
 	feature_space = get_features(positive_training_file)
 	feature_space = feature_space.union(get_features(negative_training_file))
 	feature_space = feature_space.union(get_features(positive_test_file))
-	feature_space = feature_space.union(
-
-		get_features(negative_test_file))
+	feature_space = feature_space.union(get_features(negative_test_file))
 	feature_space = list(feature_space)
 	#Instantiating a dictionary to hold the feature space.
 	feature_space_dict = {}
@@ -31,6 +29,7 @@ def generate_feature_space(positive_training_file, negative_training_file, posit
 	#Returning the feature space dictionary and the size of the feature space.
 	return feature_space_dict
 
+#Function to generate review vectors based on a feature set.
 def generate_feat_vectors(filename, label, feat_space):
     review_vectors = []
     #Opening the file passed in the function arguments.
@@ -47,9 +46,11 @@ def generate_feat_vectors(filename, label, feat_space):
             review_vectors.append((temp_vector, label))
     return review_vectors
 
+#Function to calculate the similarity between two vectors.
 def calculate_similarity(vector_x, vector_y):
 	return distance.euclidean(vector_x, vector_y)
 
+#Function to predict the label of a review vector based on its k nearest neighbours.
 def predict_label(training_data, test_review, k):
 	similarity_scores = []
 	for (training_review, label) in training_data:
@@ -67,12 +68,6 @@ def predict_label(training_data, test_review, k):
 	    return -1
 	pass
 
-def check_prediction(test_review, predicted_label):
-	if(test_review[-1] == predicted_label):
-		return True
-	else:
-		return False
-
 if __name__ == "__main__":
 
 	#Adding an argparse to parse command line commands.
@@ -84,10 +79,12 @@ if __name__ == "__main__":
 	#Parsing the command line arguments.
 	args = parser.parse_args()
 
+	#K-value must be an odd integer to prevent a tie during prediciton.
 	if(args.kvalue % 2 == 0):
 		print "K-value must be an odd integer."
 		sys.exit()
 
+	#Print statements to aid useability.
 	if not (len(sys.argv) > 1):
 		print "No command line arguments input, K-value defaulted to 5."
 	else:
